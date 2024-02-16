@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Game</title>
+    <style>
+        /* CSS styles for the game */
+        body {
+            background-color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        #game-board {
+            width: 300px;
+            height: 300px;
+            background-color: #444;
+            border: 2px solid #222;
+            position: relative;
+        }
+
+        .snake-segment {
+            width: 20px;
+            height: 20px;
+            background-color: #00FF00;
+            position: absolute;
+        }
+
+        .food {
+            width: 20px;
+            height: 20px;
+            background-color: #FF0000;
+            position: absolute;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-board"></div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            const gridSize = 15;
+            const cellSize = 20;
+            let snake = [{ x: 5, y: 5 }];
+            let direction = 'right';
+            let food = generateFood();
+
+            function generateFood() {
+                const x = Math.floor(Math.random() * gridSize);
+                const y = Math.floor(Math.random() * gridSize);
+                return { x, y };
+            }
+
+            function updateGame() {
+                // Move the snake
+                let newHead = { x: snake[0].x, y: snake[0].y };
+                if (direction === 'right') newHead.x++;
+                if (direction === 'left') newHead.x--;
+                if (direction === 'up') newHead.y--;
+                if (direction === 'down') newHead.y++;
+
+                // Check for collisions
+                if (
+                    newHead.x < 0 ||
+                    newHead.x >= gridSize ||
+                    newHead.y < 0 ||
+                    newHead.y >= gridSize ||
+                    snake.some(segment => segment.x === newHead.x && segment.y === newHead.y)
+                ) {
+                    alert('Game over!');
+                    location.reload();
+                    return;
+                }
+
+                snake.unshift(newHead);
+
+                // Check for food
+                if (newHead.x === food.x && newHead.y === food.y) {
+                    food = generateFood();
+                } else {
+                    snake.pop();
+                }
+
+                // Clear the board and redraw
+                $('#game-board').empty();
+                snake.forEach(segment => {
+                    const $segment = $('<div class="snake-segment"></div>');
+                    $segment.css({
+                        left: segment.x * cellSize + 'px',
+                        top: segment.y * cellSize + 'px'
+                    });
+                    $('#game-board').append($segment);
+                });
+
+                const $food = $('<div class="food"></div>');
+                $food.css({
+                    left: food.x * cellSize + 'px',
+                    top: food.y * cellSize + 'px'
+                });
+                $('#game-board').append($food);
+
+                // Continue the game loop
+                setTimeout(updateGame, 100);
+            }
+
+            // Handle keyboard input
+            $(document).keydown(function(e) {
+                if (e.key === 'j' && direction !== 'left') direction = 'right';
+                if (e.key === 'l' && direction !== 'right') direction = 'left';
+                if (e.key === 'i' && direction !== 'down') direction = 'up';
+                if (e.key === 'k' && direction !== 'up') direction = 'down';
+            });
+
+            // Start the game loop
+            updateGame();
+        });
+    </script>
+</body>
+</html>
